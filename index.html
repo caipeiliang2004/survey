@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>匿名视频偏好问卷</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: Arial, "Microsoft YaHei", sans-serif;
+      background: #f5f5f5;
+      color: #222;
+    }
+
+    header {
+      max-width: 1200px;
+      margin: 0 auto 28px auto;
+      background: #fff;
+      padding: 24px;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    h1 {
+      margin: 0 0 12px 0;
+      text-align: center;
+      font-size: 28px;
+    }
+
+    .intro {
+      margin: 0;
+      line-height: 1.7;
+      color: #555;
+      text-align: center;
+    }
+
+    .task {
+      max-width: 1200px;
+      margin: 0 auto 34px auto;
+      background: #fff;
+      padding: 22px;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .task-title {
+      margin: 0 0 16px 0;
+      font-size: 22px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+
+    .prompt-box {
+      background: #fafafa;
+      border: 1px solid #e8e8e8;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+      line-height: 1.65;
+    }
+
+    .prompt-label {
+      font-weight: 700;
+      margin-right: 6px;
+    }
+
+    .controls {
+      text-align: center;
+      margin: 14px 0 18px 0;
+    }
+
+    button {
+      font-size: 15px;
+      padding: 9px 18px;
+      margin: 5px;
+      cursor: pointer;
+      border: 1px solid #d9d9d9;
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    button.primary {
+      background: #1677ff;
+      color: #fff;
+      border-color: #1677ff;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .video-card {
+      background: #fafafa;
+      border: 1px solid #e8e8e8;
+      border-radius: 10px;
+      padding: 10px;
+    }
+
+    video {
+      width: 100%;
+      height: 210px;
+      background: #000;
+      object-fit: contain;
+      border-radius: 6px;
+    }
+
+    .anonymous-label {
+      margin-top: 8px;
+      text-align: center;
+      font-weight: 700;
+      color: #444;
+    }
+
+    .question-box {
+      background: #fafafa;
+      border: 1px solid #e8e8e8;
+      border-radius: 10px;
+      padding: 16px;
+      margin-top: 10px;
+    }
+
+    .question-title {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      line-height: 1.6;
+    }
+
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 24px;
+    }
+
+    .options label {
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .submit-panel {
+      max-width: 1200px;
+      margin: 0 auto 40px auto;
+      background: #fff;
+      padding: 24px;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      text-align: center;
+    }
+
+    .submit-panel p {
+      color: #555;
+      line-height: 1.7;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .external-link {
+      display: inline-block;
+      margin: 8px 6px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      background: #13c2c2;
+      color: #fff;
+      text-decoration: none;
+      font-size: 15px;
+    }
+
+    .copy-hint {
+      margin-top: 14px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    #copyOutput {
+      width: 100%;
+      min-height: 84px;
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid #d9d9d9;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.6;
+      resize: vertical;
+    }
+
+    @media (max-width: 1100px) {
+      .video-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      video {
+        height: 230px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 12px;
+      }
+
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
+
+      video {
+        height: 220px;
+      }
+
+      .options {
+        display: block;
+      }
+
+      .options label {
+        display: block;
+        margin: 10px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>视频偏好问卷</h1>
+    <p class="intro">
+      请依次观看每个提示词对应的四个视频。视频将以 Video A、Video B、Video C、Video D 的形式展示。
+      对于每个提示词，请综合考虑视觉质量（visual quality）和文本匹配度（text alignment），选择你更偏好的视频。
+    </p>
+  </header>
+
+  <!--
+    IMPORTANT:
+    1. The displayed order is fixed as:
+       A = monarchrt, B = taylorseer, C = dummyforcing, D = ours
+       The method names are NOT shown to participants.
+
+    2. Replace prompt_en and prompt_zh below with your real English prompts and Chinese translations.
+
+    3. If you use Wenjuanxing/Jinshuju iframe embedding, you can remove the local form below
+       and paste their iframe after the video blocks. However, this local form is useful if you
+       submit results to a backend/API endpoint.
+  -->
+
+  <form id="surveyForm">
+    <div id="tasksContainer"></div>
+
+    <div class="submit-panel">
+      <h2>复制你的选择</h2>
+      <p>请完成全部 10 个提示词的选择后，点击下方按钮复制结果。复制后请打开外部问卷链接，并将结果粘贴到指定题目中。</p>
+
+      <input type="hidden" name="submitted_at" id="submitted_at" />
+      <input type="hidden" name="user_agent" id="user_agent" />
+      <input type="hidden" name="page_url" id="page_url" />
+      <input type="hidden" name="answers_json" id="answers_json" />
+
+      <button class="primary" type="button" onclick="copyAnswers()">复制我的选择</button>
+      <a class="external-link" href="https://wj.qq.com/s2/26509904/0e8a/" target="_blank" rel="noopener noreferrer">打开外部问卷</a>
+
+      <p class="copy-hint">复制格式：提交时间、q1 至 q10，用制表符分隔，可直接粘贴到表格或问卷文本框中。</p>
+      <textarea id="copyOutput" readonly placeholder="点击“复制我的选择”后，这里会显示可复制内容。"></textarea>
+    </div>
+  </form>
+
+  <script>
+    const methods = [
+      { key: "monarchrt", label: "Video A" },
+      { key: "taylorseer", label: "Video B" },
+      { key: "dummyforcing", label: "Video C" },
+      { key: "ours", label: "Video D" }
+    ];
+
+    const tasks = [
+      {
+        id: "22_22_0",
+        filename: "22_22_0.mp4",
+        prompt_en: "A charming comic-style illustration depicting a cozy living room scene where a fluffy gray cat is waking up its sleeping owner, who lies on the couch with a sleepy, resigned expression. The cat, with large, round eyes and a mischievous look, is pawing at the owner's face and meowing insistently. The owner attempts to ignore the cat, turning away slightly, but the cat persists, jumping onto the owner's chest and nuzzling their hand. Finally, the owner, unable to resist, reaches under the pillow and pulls out a small bag of treats, offering it to the cat with a playful smile. The background shows soft, warm lighting from a nearby lamp, with scattered books and a blanket on the couch. A medium shot from a slightly elevated angle, capturing both the cat and the owner's interaction.",
+        prompt_zh: "一幅迷人的漫画风格插图，描绘了温馨客厅中的场景：一只毛茸茸的灰猫正在叫醒躺在沙发上睡觉的主人，主人露出困倦又无奈的表情。这只猫有着大而圆的眼睛和调皮的神情，正用爪子拍主人的脸，并坚持不懈地喵喵叫。主人试图无视它，微微转过身去，但猫仍不放弃，跳到主人的胸前，并用鼻子蹭主人的手。最后，主人无法抗拒，从枕头下面拿出一小袋零食，带着俏皮的微笑递给猫。背景中有附近台灯投下的柔和暖光，沙发上散落着书本和一条毯子。画面为略微俯视角度的中景镜头，同时捕捉猫与主人之间的互动。"
+      },
+      {
+        id: "23_23_0",
+        filename: "23_23_0.mp4",
+        prompt_en: "A nature photography style photo capturing a family of orangutans along the Kinabatangan River in Borneo. The mother orangutan, with long reddish-brown fur and expressive brown eyes, is holding her baby tightly. The baby orangutan, with smaller size and lighter fur, is clinging to its mother’s chest, both gazing curiously at the camera. The father orangutan, larger and more muscular, is standing nearby, looking contemplative. The riverbank is lush with green foliage, and the water reflects the surrounding tropical rainforest. The photo has a vivid and naturalistic style, with the orangutans in focus against a slightly blurred background of dense jungle. A medium shot from a slightly elevated angle, capturing the interaction between the family.",
+        prompt_zh: "一张自然摄影风格的照片，捕捉了婆罗洲京那巴当岸河沿岸的一家红毛猩猩。母猩猩有着长长的红棕色毛发和富有表现力的棕色眼睛，正紧紧抱着她的幼崽。幼年红毛猩猩体型较小、毛色较浅，依偎在母亲胸前，两者都好奇地望向镜头。体型更大、更强壮的父猩猩站在附近，神情若有所思。河岸上覆盖着郁郁葱葱的绿色植被，水面倒映着周围的热带雨林。照片风格鲜明而自然，红毛猩猩清晰对焦，背景中茂密的丛林略微虚化。画面为略微俯视角度的中景镜头，捕捉这一家红毛猩猩之间的互动。"
+      },
+      {
+        id: "36_36_0",
+        filename: "36_36_0.mp4",
+        prompt_en: "A realistic archaeological excavation scene in a vast desert, where archeologists meticulously uncover a generic plastic chair buried under layers of sand. They carefully brush away the dust, their focused expressions conveying the importance of their discovery. The chair, though simple, appears slightly worn and faded. The background showcases the harsh, barren landscape of the desert, with dunes stretching into the distance. The sun is setting, casting long shadows and adding a sense of timelessness to the scene. A close-up shot from a slightly lower angle, emphasizing the detailed work of the archeologists and the weathered chair.",
+        prompt_zh: "一个写实的考古发掘场景，发生在广阔的沙漠中，考古学家们正在一丝不苟地挖掘一把埋在层层沙土之下的普通塑料椅。他们小心地拂去尘土，专注的表情传达出这项发现的重要性。这把椅子虽然普通，却显得略微磨损且褪色。背景展现了严酷而荒凉的沙漠景观，沙丘一直延伸到远方。太阳正在落下，投下长长的影子，为画面增添了一种跨越时间的感觉。画面为略微低角度的特写镜头，强调考古学家细致的工作以及这把风化的椅子。"
+      },
+      {
+        id: "50_50_0",
+        filename: "50_50_0.mp4",
+        prompt_en: "A vibrant and dynamic illustration in a cartoon style depicting a white cat sitting comfortably behind the wheel of a toy car, driving through a bustling downtown street. The cat has large, round eyes and a mischievous grin, with fur that appears soft and fluffy. Tall skyscrapers and a mix of people walking briskly fill the background, adding to the lively urban setting. The car's tires spin as it moves, and the wind flows through the cat's ears. The illustration has a bright color palette and a smooth, cartoony texture. The camera angle is slightly elevated, capturing both the cat and the vibrant street scene below.",
+        prompt_zh: "一幅充满活力和动感的卡通风格插图，描绘了一只白猫舒适地坐在玩具车的方向盘后，穿行在繁忙的市中心街道上。猫有着大而圆的眼睛和调皮的咧嘴笑，毛发看起来柔软蓬松。背景中有高耸的摩天大楼，以及匆匆行走的各类人群，增强了热闹的都市氛围。汽车行驶时轮胎飞快转动，风从猫的耳朵间吹过。插图采用明亮的色彩搭配和流畅的卡通质感。镜头角度略微俯视，同时捕捉猫和下方充满活力的街景。"
+      },
+      {
+        id: "58_58_0",
+        filename: "58_58_0.mp4",
+        prompt_en: "A vibrant tropical fish swimming gracefully among colorful coral reefs in a clear, turquoise ocean. The fish has bright blue and yellow scales with a small, distinctive orange spot on its side, its fins moving fluidly. The coral reefs are alive with a variety of marine life, including small schools of colorful fish and sea turtles gliding by. The water is crystal clear, allowing for a view of the sandy ocean floor below. The reef itself is adorned with a mix of hard and soft corals in shades of red, orange, and green. The photo captures the fish from a slightly elevated angle, emphasizing its lively movements and the vivid colors of its surroundings. A close-up shot with dynamic movement.",
+        prompt_zh: "一条色彩鲜艳的热带鱼在清澈的绿松石色海水中，优雅地穿梭于五彩斑斓的珊瑚礁之间。这条鱼有着明亮的蓝色和黄色鳞片，身体侧面有一个小而醒目的橙色斑点，鱼鳍流畅地摆动。珊瑚礁充满生机，各种海洋生物栖息其中，包括一小群彩色鱼类以及滑行而过的海龟。海水晶莹剔透，可以看到下方的沙质海底。珊瑚礁本身由红色、橙色和绿色的硬珊瑚与软珊瑚共同点缀。照片从略微俯视的角度捕捉这条鱼，强调它生动的运动以及周围环境的鲜艳色彩。画面为带有动态感的特写镜头。"
+      },
+      {
+        id: "62_62_0",
+        filename: "62_62_0.mp4",
+        prompt_en: "A close-up shot of someone carefully pouring milk into a cup, with the milk flowing smoothly and filling the cup with a milky white color. The person's hand is steady, guiding the milk into the cup with precision. The background is blurred, showing a subtle kitchen setting with hints of cabinets and countertops. The photo has a soft, natural lighting effect, emphasizing the smoothness and elegance of the pouring action.",
+        prompt_zh: "一个特写镜头，展示某人小心地将牛奶倒入杯中，牛奶顺滑地流动，将杯子逐渐填满成乳白色。这个人的手十分稳定，精准地引导牛奶倒入杯中。背景经过虚化，隐约呈现厨房环境，可见橱柜和台面的细节。照片具有柔和自然的光线效果，强调倒奶动作的顺滑与优雅。"
+      },
+      {
+        id: "70_70_0",
+        filename: "70_70_0.mp4",
+        prompt_en: "A subtle and elegant photograph in a Japanese style, capturing a woman with gentle, contemplative eyes and flowing dark hair sitting by the window of a high-speed train. The train moves rapidly through a bustling cityscape, with blurred reflections of the city lights and buildings on the window pane. The woman appears serene, her hands resting gently on her lap. The background features a blend of traditional Japanese architecture and modern skyscrapers, with a soft, muted color palette. The photo has a vintage film texture, emphasizing the movement and energy of the scene. A medium shot from a slightly angled perspective, highlighting the woman's thoughtful gaze and the dynamic motion of the train.",
+        prompt_zh: "一张含蓄而优雅的日式风格照片，捕捉了一位女子坐在高速列车窗边的场景。她有着温柔而沉思的眼神和飘逸的黑发。列车快速穿过繁忙的城市景观，车窗上倒映着模糊的城市灯光和建筑。女子显得宁静安详，双手轻轻放在膝上。背景融合了传统日本建筑和现代摩天大楼，整体采用柔和而低饱和的色调。照片带有复古胶片质感，强调场景中的运动感与能量。画面为略带角度的中景镜头，突出女子若有所思的目光以及列车的动态运动。"
+      },
+      {
+        id: "81_81_0",
+        filename: "81_81_0.mp4",
+        prompt_en: "A hyper-realistic digital art piece capturing an internal window view inside a high-speed train moving through an old European city. The train interior is sleek and modern, with passengers seated in comfortable leather seats, some reading books or using laptops. The window frame is clear, showing the bustling streets and historic buildings of the city rushing past at incredible speed. The cityscape features ancient cobblestone streets, ornate facades, and spires of medieval churches, with people walking hurriedly and horse-drawn carriages passing by. The train's motion is vividly depicted, creating a sense of dynamic movement and adventure. The background is richly detailed, with the cityscape blurred and streaked, emphasizing the train's speed. The overall atmosphere is both futuristic and nostalgic, blending modern technology with historical charm. A wide-angle shot from inside the train, capturing the motion and the cityscape outside.",
+        prompt_zh: "一幅超写实数字艺术作品，呈现从高速列车内部车窗望出去的视角，列车正在穿越一座古老的欧洲城市。列车内部时尚而现代，乘客坐在舒适的皮质座椅上，有人在读书，有人在使用笔记本电脑。清晰的窗框外可以看到繁忙街道和历史建筑以惊人的速度掠过。城市景观中有古老的鹅卵石街道、华丽的建筑立面以及中世纪教堂的尖塔，人们匆忙行走，马车从旁经过。列车的运动被生动地表现出来，营造出强烈的动感和冒险感。背景细节丰富，城市景观被虚化并拉成条纹，突出列车的速度。整体氛围既未来又怀旧，将现代科技与历史魅力融合在一起。画面为从列车内部拍摄的广角镜头，捕捉列车运动以及窗外城市景观。"
+      },
+      {
+        id: "92_92_0",
+        filename: "92_92_0.mp4",
+        prompt_en: "A zoom-in shot focusing on the face of a young woman sitting on a bench in the middle of an empty school gym. The woman has long wavy brown hair cascading down her shoulders and soft, warm hazel eyes. She wears a simple white t-shirt and blue jeans, her hands resting gently on her knees. Her expression is serene, with a slight smile playing on her lips. The gymnasium is mostly empty, with only a few scattered bleachers and a basketball hoop in the background. The lighting is soft and natural, creating gentle shadows under her eyes and nose. The overall atmosphere is peaceful and contemplative.",
+        prompt_zh: "一个推进式特写镜头，聚焦于一位年轻女子的脸。她坐在空旷学校体育馆中央的一张长椅上，留着披落在肩上的棕色长卷发，有着柔和温暖的榛色眼睛。她穿着简单的白色 T 恤和蓝色牛仔裤，双手轻轻放在膝盖上。她的表情平静，唇边带着一丝淡淡的微笑。体育馆几乎空无一人，背景中只有几排零散的看台和一个篮球架。光线柔和自然，在她的眼下和鼻侧形成细腻的阴影。整体氛围宁静而沉思。"
+      },
+      {
+        id: "115_115_0",
+        filename: "115_115_0.mp4",
+        prompt_en: "A vibrant concert stage scene in the style of a music video, featuring a woman in the spotlight, singing passionately. She stands confidently on the stage, microphone in hand, with a captivating expression on her face. The bright light behind her creates a dramatic silhouette, casting a warm glow over her. She wears a stylish, form-fitting black dress with intricate silver embroidery, emphasizing her graceful movements. The background features a blurred stage with colorful lights and banners advertising the event. A dynamic medium shot capturing the singer from a slightly elevated angle, highlighting her performance and the dramatic lighting effects.",
+        prompt_zh: "一个充满活力的演唱会舞台场景，采用音乐视频风格，画面中一位女子站在聚光灯下充满激情地歌唱。她自信地站在舞台上，手持麦克风，脸上带着极具吸引力的表情。她身后明亮的灯光形成戏剧性的剪影，并在她身上投下温暖的光晕。她穿着一件时尚修身的黑色连衣裙，上面有精致的银色刺绣，突出了她优雅的动作。背景是虚化的舞台，带有彩色灯光和宣传活动的横幅。画面为略微俯视角度的动态中景镜头，突出歌手的表演以及戏剧化的灯光效果。"
+      }
+    ];
+
+    function createTaskBlock(task, index) {
+      const section = document.createElement("section");
+      section.className = "task";
+      section.id = `task-${task.id}`;
+
+      const videoCards = methods.map(method => {
+        const src = `videos/${method.key}/${task.filename}`;
+        return `
+          <div class="video-card">
+            <video src="${src}" controls muted preload="metadata" playsinline data-task-id="${task.id}"></video>
+            <div class="anonymous-label">${method.label}</div>
+          </div>
+        `;
+      }).join("");
+
+      const options = methods.map(method => `
+        <label>
+          <input type="radio" name="choice_${task.id}" value="${method.label}" required>
+          ${method.label}
+        </label>
+      `).join("");
+
+      section.innerHTML = `
+        <h2 class="task-title">提示词 ${index + 1}</h2>
+
+        <div class="prompt-box">
+          <div><span class="prompt-label">中文提示词：</span>${escapeHtml(task.prompt_zh)}</div>
+          <div><span class="prompt-label">English prompt:</span>${escapeHtml(task.prompt_en)}</div>
+        </div>
+
+        <div class="controls">
+          <button type="button" onclick="playTaskVideos('${task.id}')">同时播放</button>
+          <button type="button" onclick="pauseTaskVideos('${task.id}')">同时暂停</button>
+          <button type="button" onclick="resetTaskVideos('${task.id}')">重置</button>
+        </div>
+
+        <div class="video-grid">
+          ${videoCards}
+        </div>
+
+        <div class="question-box">
+          <p class="question-title">
+            综合考虑视觉质量（visual quality）和文本匹配度（text alignment），你更偏好哪个视频？
+          </p>
+          <div class="options">
+            ${options}
+          </div>
+        </div>
+      `;
+
+      return section;
+    }
+
+    function escapeHtml(text) {
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function getTaskVideos(taskId) {
+      return Array.from(document.querySelectorAll(`video[data-task-id="${taskId}"]`));
+    }
+
+    async function playTaskVideos(taskId) {
+      const videos = getTaskVideos(taskId);
+
+      videos.forEach(video => {
+        video.currentTime = 0;
+      });
+
+      // Start all videos as close together as the browser allows.
+      await Promise.allSettled(videos.map(video => video.play()));
+    }
+
+    function pauseTaskVideos(taskId) {
+      getTaskVideos(taskId).forEach(video => video.pause());
+    }
+
+    function resetTaskVideos(taskId) {
+      getTaskVideos(taskId).forEach(video => {
+        video.pause();
+        video.currentTime = 0;
+      });
+    }
+
+    function collectAnswers() {
+      return tasks.map(task => {
+        const selected = document.querySelector(`input[name="choice_${task.id}"]:checked`);
+        return {
+          prompt_id: task.id,
+          filename: task.filename,
+          selected_video: selected ? selected.value : "",
+          // Internal mapping. Remove this before collecting public data if you do not want it submitted.
+          internal_method_order: {
+            "Video A": "monarchrt",
+            "Video B": "taylorseer",
+            "Video C": "dummyforcing",
+            "Video D": "ours"
+          }
+        };
+      });
+    }
+
+    function renderTasks() {
+      const container = document.getElementById("tasksContainer");
+      tasks.forEach((task, index) => {
+        container.appendChild(createTaskBlock(task, index));
+      });
+    }
+
+    function buildCopyText() {
+      const answers = collectAnswers();
+      const incomplete = answers.some(answer => !answer.selected_video);
+
+      if (incomplete) {
+        alert("请先完成每个提示词下的选择，再复制结果。");
+        return null;
+      }
+
+      const submittedAt = new Date().toISOString();
+      const selectedVideos = answers.map(answer => answer.selected_video);
+
+      // Tab-separated format:
+      // submitted_at    q1    q2    q3 ... q10
+      return [submittedAt, ...selectedVideos].join("	");
+    }
+
+    async function copyAnswers() {
+      const copyText = buildCopyText();
+      if (!copyText) return;
+
+      const output = document.getElementById("copyOutput");
+      output.value = copyText;
+      output.focus();
+      output.select();
+
+      try {
+        await navigator.clipboard.writeText(copyText);
+        alert("已复制！请点击“打开外部问卷”，并将结果粘贴到指定题目中。");
+      } catch (error) {
+        document.execCommand("copy");
+        alert("结果已生成。如果没有自动复制，请手动复制下方文本框内容。");
+      }
+    }
+
+    document.getElementById("surveyForm").addEventListener("submit", function(event) {
+      event.preventDefault();
+      copyAnswers();
+    });
+
+    renderTasks();
+  </script>
+</body>
+</html>
